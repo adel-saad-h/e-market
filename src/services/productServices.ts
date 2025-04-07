@@ -8,7 +8,7 @@ export const getAllProducts = async () => {
         }
         return { data: productData, statusCode: 200 }
     } catch (err) {
-        return { data: await err, statusCode: 400 }
+        return { data: await err, statusCode: 500 }
 
     }
 }
@@ -25,7 +25,7 @@ export const addNewProduct = async ({ title, image, stoke, price }: AddNewProduc
         newProduct.save();
         return { data: newProduct, statusCode: 200 }
     } catch (err) {
-        return { data: await err, statusCode: 400 }
+        return { data: await err, statusCode: 500 }
 
     }
 }

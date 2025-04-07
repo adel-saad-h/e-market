@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
         const products = await getAllProducts();
         res.status(200).send(products);
     } catch (err) {
-        res.status(400).send("Something is wrong " + err)
+        res.status(500).send("Something is wrong " + err)
     }
 });
 
@@ -18,7 +18,7 @@ router.post("/addNewProduct", async (req, res) => {
         const { statusCode, data } = await addNewProduct({ title, image, stoke, price });
         res.status(statusCode).send(data);
     } catch (err) {
-        res.status(400).send("Something is wrong " + err)
+        res.status(500).send("Something is wrong " + err)
     }
 })
 

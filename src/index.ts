@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import productRouter from "./routes/productRoute"
+import userRouter from "./routes/userRoute"
 
 dotenv.config();
 
@@ -15,5 +16,6 @@ mongoose.connect(process.env.DATABASE_URL || "")
     .catch((err) => console.log("failed to connect!", err));
 
 app.use("/products", productRouter)
+app.use("/users", userRouter)
 
 app.listen(port, () => { console.log(`Server is running at : http://localhost:${port}`) });
