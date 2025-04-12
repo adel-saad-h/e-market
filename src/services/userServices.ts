@@ -1,5 +1,7 @@
 import { userModel } from "../models/userModel";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken"
+
 
 interface RegisterParams {
     firstName: string;
@@ -14,10 +16,10 @@ export const register = async ({ firstName, lastName, email, password, address }
         if (findUser) {
             return { data: "User already exists", statusCode: 400 }
         }
-        const hashPassword = await bcrypt.hash(password,10)
+        const hashPassword = await bcrypt.hash(password, 10)
         const newUser = await userModel.create({ firstName, lastName, email, password: hashPassword, address });
         newUser.save();
-        return { data: newUser, statusCode: 200 }
+        return { data: generateJWT({ firstName, lastName, email }), statusCode: 200 }
     } catch (err) {
         return { data: await err, statusCode: 500 }
     }
@@ -32,9 +34,13 @@ export const login = async ({ email, password }: LoginParams) => {
     if (!findUser) {
         return { data: "In correct data", statusCode: 400 }
     }
-    const passwordMatch = await bcrypt.compare(password,findUser.password);
+    const passwordMatch = await bcrypt.compare(password, findUser.password);
     if (!passwordMatch) {
         return { data: "In correct data", statusCode: 400 }
     }
-    return { data: findUser, statusCode: 200 }
+    return { data: generateJWT({ email, firstName: findUser.firstName }), statusCode: 200 }
+}
+
+const generateJWT = (data: any) => {
+    return jwt.sign(data, process.env.JWT_SECRET || "")
 }
