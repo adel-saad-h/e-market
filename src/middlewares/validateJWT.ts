@@ -1,3 +1,11 @@
+
+/*
+-here we get the toke from frontEnd 
+-make sure that token is generated with my secret key
+-add the user data to the request parameter
+*/
+
+
 import { ExtendRequest } from "../types/extendRequest";
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";

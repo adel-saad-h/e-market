@@ -1,3 +1,8 @@
+/*
+we want 2 git all data for the product and additional info
+we can make discount on the price so we can't use the product price
+*/
+
 import mongoose, { Document, ObjectId, Schema } from "mongoose";
 import { IProduct } from "./productModel";
 
@@ -11,7 +16,7 @@ export interface ICart extends Document {
     userId: ObjectId | string;
     items: ICartItem[];
     totalAmount: number;
-    status: "active" | "completed"
+    status: "active" | "completed" //we want to save the cart history
 
 }
 

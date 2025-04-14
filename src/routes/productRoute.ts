@@ -12,6 +12,7 @@ router.get("/", async (req, res) => {
     }
 });
 
+//To-Do validate for defend who is authorized to add new product.
 router.post("/addNewProduct", async (req, res) => {
     try {
         const { title, image, stoke, price } = req.body;

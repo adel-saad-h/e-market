@@ -1,3 +1,7 @@
+/*
+ The data that we want to collect and save to DB
+ and the model that we will be use in the other code
+*/
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IUser extends Document {

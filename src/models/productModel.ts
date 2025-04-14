@@ -1,3 +1,8 @@
+/*
+ The data that we want to collect and save to DB
+ and the model that we will be use in the other code
+*/
+
 import mongoose, { Schema, Document } from "mongoose";
 export interface IProduct extends Document {
     title: string;

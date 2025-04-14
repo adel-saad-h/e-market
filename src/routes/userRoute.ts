@@ -1,3 +1,6 @@
+/*
+The endpoints use the logic from the services file
+*/
 import express from "express";
 import { login, register } from "../services/userServices";
 

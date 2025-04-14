@@ -1,5 +1,7 @@
 import { cartModel } from "../models/cartModel";
+import { IOrderItem, orderModel } from "../models/orderModel";
 import { ProductModel } from "../models/productModel";
+
 
 interface CreateCart {
     userId: string;
@@ -9,8 +11,6 @@ const createCart = async ({ userId }: CreateCart) => {
     const cart = await cartModel.create({ userId, items: [], totalAmount: 0 });
     cart.save();
     return cart;
-
-
 }
 
 interface GetActiveCartForUser {
@@ -42,7 +42,7 @@ export const clearActiveCartForUser = async ({ userId }: ClearActiveCartForUser)
         const updatedCart = await cart.save();
         return { data: updatedCart, statusCode: 200 }
     } catch (err) {
-        return { data: "Something is wrong" + err, statusCode: 500 }
+        return { data: "Something is wrong : " + err, statusCode: 500 }
     }
 }
 
@@ -72,7 +72,7 @@ export const addItemToCart = async ({ userId, productId, quantity }: AddItemToCa
         const updatedCart = await cart.save();
         return { data: updatedCart, statusCode: 200 }
     } catch (err) {
-        return { data: "Something is wrong" + err, statusCode: 500 }
+        return { data: "Something is wrong : " + err, statusCode: 500 }
     }
 
 }
@@ -102,7 +102,7 @@ export const updateItemInCart = async ({ userId, productId, quantity }: UpdateIt
         const updatedCart = await cart.save();
         return { data: updatedCart, statusCode: 200 }
     } catch (err) {
-        return { data: "Something is wrong" + err, statusCode: 500 }
+        return { data: "Something is wrong : " + err, statusCode: 500 }
     }
 }
 interface DeleteItemFromCart {
@@ -126,6 +126,47 @@ export const deleteItemFromCart = async ({ userId, productId }: DeleteItemFromCa
         const updatedCart = await cart.save();
         return { data: updatedCart, statusCode: 200 }
     } catch (err) {
-        return { data: "Something is wrong" + err, statusCode: 500 }
+        return { data: "Something is wrong : " + err, statusCode: 500 }
+    }
+}
+
+interface Checkout {
+    userId: string;
+    userAddress: string;
+}
+export const checkout = async ({ userId, userAddress }: Checkout) => {
+    try {
+        const cart = await getActiveCartForUser({ userId });
+        const existsItemsInCart = cart.items;
+        if (!existsItemsInCart) {
+            return { data: "No products found in you cart", statusCode: 400 }
+        }
+        const orderItems: IOrderItem[] = []
+        for (const item of cart.items) {
+            const product = await ProductModel.findById(item.product);
+            if (!product) {
+                return { data: "No products found ", statusCode: 400 }
+            }
+            const orderItem: IOrderItem = {
+                productTitle: product.title,
+                productImage: product.image,
+                quantity: item.quantity,
+                unitPrice: product.price
+            };
+            orderItems.push(orderItem);
+        }
+        const order = await orderModel.create({
+            orderItems,
+            total: cart.totalAmount,
+            address: userAddress,
+            userId
+        });
+
+        await order.save()
+        cart.status = "completed";
+        await cart.save()
+        return { data: order, statusCode: 200 }
+    } catch (err) {
+        return { data: "Something is wrong : " + err, statusCode: 500 }
     }
 }
