@@ -1,3 +1,11 @@
+/*
+After creating the cart services ,
+we add populate function to cart 
+to replace that product ID in the collection 
+with the full product information from the product collection.
+And make it optional so we can use it as a product id in the other functions.
+*/
+
 import { cartModel } from "../models/cartModel";
 import { IOrderItem, orderModel } from "../models/orderModel";
 import { ProductModel } from "../models/productModel";
@@ -15,10 +23,19 @@ const createCart = async ({ userId }: CreateCart) => {
 
 interface GetActiveCartForUser {
     userId: string;
+    populateProduct?: boolean;
 }
-export const getActiveCartForUser = async ({ userId }: GetActiveCartForUser) => {
+export const getActiveCartForUser = async ({ userId, populateProduct }: GetActiveCartForUser) => {
     try {
-        let cart = await cartModel.findOne({ userId, status: "active" });
+        let cart;
+        if (populateProduct == true) {
+            cart = await cartModel
+                .findOne({ userId, status: "active" })
+                .populate('items.product');
+        } else {
+            cart = await cartModel.findOne({ userId, status: "active" });
+        }
+
         if (!cart) {
             cart = await createCart({ userId });
         }
@@ -55,7 +72,7 @@ interface AddItemToCart {
 export const addItemToCart = async ({ userId, productId, quantity }: AddItemToCart) => {
     try {
         const cart = await getActiveCartForUser({ userId });
-        const existsInCart = cart.items.find((p) => p.product === productId);
+        const existsInCart = cart.items.find((p) => p.product.toString() === productId);
         if (existsInCart) {
             return { data: "Item already in your cart", statusCode: 400 }
         }
@@ -69,8 +86,8 @@ export const addItemToCart = async ({ userId, productId, quantity }: AddItemToCa
         cart.items.push({ product: productId, quantity, price: product.price });
 
         cart.totalAmount += product.price * quantity;
-        const updatedCart = await cart.save();
-        return { data: updatedCart, statusCode: 200 }
+        await cart.save();
+        return { data: await getActiveCartForUser({ userId, populateProduct: true }), statusCode: 200 }
     } catch (err) {
         return { data: "Something is wrong : " + err, statusCode: 500 }
     }
@@ -84,7 +101,7 @@ interface UpdateItemInCart {
 export const updateItemInCart = async ({ userId, productId, quantity }: UpdateItemInCart) => {
     try {
         const cart = await getActiveCartForUser({ userId });
-        const existsInCart = cart.items.find((p) => p.product === productId);
+        const existsInCart = cart.items.find((p) => p.product.toString() === productId);
         if (!existsInCart) {
             return { data: "Item not in your cart", statusCode: 400 }
         }
@@ -99,8 +116,8 @@ export const updateItemInCart = async ({ userId, productId, quantity }: UpdateIt
         existsInCart.quantity = quantity;
         cart.totalAmount += product.price * quantity;
 
-        const updatedCart = await cart.save();
-        return { data: updatedCart, statusCode: 200 }
+        await cart.save();
+        return { data: await getActiveCartForUser({ userId, populateProduct: true }), statusCode: 200 }
     } catch (err) {
         return { data: "Something is wrong : " + err, statusCode: 500 }
     }
@@ -112,7 +129,7 @@ interface DeleteItemFromCart {
 export const deleteItemFromCart = async ({ userId, productId }: DeleteItemFromCart) => {
     try {
         const cart = await getActiveCartForUser({ userId });
-        const existsInCart = cart.items.find((p) => p.product === productId);
+        const existsInCart = cart.items.find((p) => p.product.toString() === productId);
         if (!existsInCart) {
             return { data: "Item not in your cart", statusCode: 400 }
         }
@@ -121,10 +138,10 @@ export const deleteItemFromCart = async ({ userId, productId }: DeleteItemFromCa
             return { data: "Product not found", statusCode: 400 }
         }
         cart.totalAmount -= existsInCart.quantity * product.price
-        const otherItemInCart = cart.items.filter((p) => p.product !== productId)
+        const otherItemInCart = cart.items.filter((p) => p.product.toString() !== productId)
         cart.items = otherItemInCart;
-        const updatedCart = await cart.save();
-        return { data: updatedCart, statusCode: 200 }
+        await cart.save();
+        return { data: await getActiveCartForUser({ userId, populateProduct: true }), statusCode: 200 }
     } catch (err) {
         return { data: "Something is wrong : " + err, statusCode: 500 }
     }

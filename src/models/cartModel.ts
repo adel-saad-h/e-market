@@ -21,13 +21,13 @@ export interface ICart extends Document {
 }
 
 const cartItemSchema = new Schema<ICartItem>({
-    product: { type: String, required: true },
+    product: { type: Schema.Types.ObjectId, ref: "products", required: true },
     quantity: { type: Number, required: true },
     price: { type: Number, required: true }
 
 })
 const cartSchema = new Schema<ICart>({
-    userId: { type: Schema.Types.ObjectId, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "user", required: true },
     items: [cartItemSchema],
     totalAmount: { type: Number, required: true },
     status: { type: String, enum: CartStatusEnum, default: "active" }
