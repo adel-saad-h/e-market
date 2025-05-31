@@ -4,7 +4,7 @@ export const getAllProducts = async () => {
     try {
         const productData = await ProductModel.find()
         if (!productData) {
-            return { data: "No products founded", statusCode: 200 }
+            return { data: "No products founded", statusCode: 404 }
         }
         return { data: productData, statusCode: 200 }
     } catch (err) {
